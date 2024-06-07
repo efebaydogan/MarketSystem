@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MarketSystem
 {
@@ -13,7 +9,7 @@ namespace MarketSystem
         static void Main(string[] args)
         {
 
-            string conString = "Data Source = DESKTOP-HJ43K02;Initial Catalog=MarketSystem;Integrated Security=True;TrustServerCertificate=True;Trusted_Connection=True";
+            string conString = "Your Connection String";
             SqlConnection connect = new SqlConnection(conString);
 
             EmployeeData ed = new EmployeeData();
@@ -28,18 +24,21 @@ namespace MarketSystem
             if (userInput == "1")
             {
                 Console.Clear();
-                SignUpFunction();        
+                SignUpFunction();
             }
 
             else if (userInput == "2")
             {
                 Console.Clear();
                 LoginFunction();
+                RoleManagement();
             }
+
+
 
             Console.ReadKey();
 
-            //functions
+            //FUNCTIONS
 
             void SignUpFunction()
             {
@@ -92,7 +91,7 @@ namespace MarketSystem
                 string login = "Select * from EmployeeTable where username = @un and password = @p";
                 SqlCommand cmdlogin = new SqlCommand(login, connect);
 
-                cmdlogin.Parameters.AddWithValue("@un",ed.username);
+                cmdlogin.Parameters.AddWithValue("@un", ed.username);
                 cmdlogin.Parameters.AddWithValue("@p", ed.password);
 
                 dr = cmdlogin.ExecuteReader();
@@ -109,7 +108,39 @@ namespace MarketSystem
                     Console.ReadKey();
                     LoginFunction();
                 }
+                dr.Close();
             }
+            void RoleManagement()
+            {
+                //In this function,we learning the what's the role of employee.So we can authorise them to do their jobs.
+                if (ed.isLogin == true)
+                {
+                    if (connect.State == ConnectionState.Closed)
+                    {
+                        connect.Open();
+                    }
+
+                    try
+                    {
+                        string roleManage = "Select role from EmployeeTable where username = @username";
+                        SqlCommand cmdrManage = new SqlCommand(roleManage, connect);
+
+                        cmdrManage.Parameters.AddWithValue("@username", ed.username);
+
+                        ed.role = Convert.ToString(cmdrManage.ExecuteScalar());
+
+                        Console.WriteLine(ed.role);
+                    }
+
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+            }
+                   
+            Console.ReadKey();
+
         }
     }
 }
