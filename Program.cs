@@ -17,26 +17,19 @@ namespace MarketSystem
             SqlDataReader dr;
 
             Console.WriteLine("Hello! \nWelcome to the market system.");
-            Console.WriteLine("If you are a new employee you need to sign up or you can just login.");
-            Console.WriteLine("What do you want to do? \n1 - Sign up \n2 - Login ");
+            Console.WriteLine("If you are a new employee you need to take your username and password from store manager.Or you can just login.");
+            Console.WriteLine("İf you know username and password , press 1.");
 
             string userInput = Console.ReadLine();
 
             if (userInput == "1")
             {
                 Console.Clear();
-                SignUpFunction();
-            }
-
-            else if (userInput == "2")
-            {
-                Console.Clear();
                 LoginFunction();
                 RoleManagement();
                 MainMenu();
+
             }
-
-
 
             Console.ReadKey();
 
@@ -57,6 +50,9 @@ namespace MarketSystem
                             case 1:
                                 ProductManagement();
                                 break;
+                            case 2:
+                                EmployeeManagement();
+                                break;
                             default:
                                 Console.WriteLine("İnvalid Value");
                                 break;
@@ -64,40 +60,6 @@ namespace MarketSystem
                         }
                     }
                 }
-            }
-            void SignUpFunction()
-            {
-                if (connect.State == ConnectionState.Closed)
-                {
-                    connect.Open();
-                }
-
-
-                Console.WriteLine("Welcome to the sign up panel.");
-
-                Console.WriteLine("First, what is your name?");
-                ed.name = Console.ReadLine();
-                Console.WriteLine("Specify a username.");
-                ed.username = Console.ReadLine();
-                Console.WriteLine("Set a password.");
-                ed.password = Console.ReadLine();
-                Console.WriteLine("What is your role? (Store Manager,Cashier,Janitor,Security Guard,");
-                ed.role = Console.ReadLine();
-
-                string signup = "Insert into EmployeeTable (username,name,password,role) values (@un,@n,@pw,@r)";
-                SqlCommand cmdsignup = new SqlCommand(signup, connect);
-
-                cmdsignup.Parameters.AddWithValue("@un", ed.username);
-                cmdsignup.Parameters.AddWithValue("n", ed.name);
-                cmdsignup.Parameters.AddWithValue("pw", ed.password);
-                cmdsignup.Parameters.AddWithValue("r", ed.role);
-                cmdsignup.ExecuteNonQuery();
-
-                Console.WriteLine("Successful.");
-
-                connect.Close();
-
-
             }
             void LoginFunction()
             {
@@ -249,7 +211,7 @@ namespace MarketSystem
                         MainMenu();
                     }
 
-                    else if (productInput == "2")
+                    else if (updateInput == 2)
                     {
                         Console.Clear();
                         Console.WriteLine("What price do you want to update");
@@ -273,6 +235,11 @@ namespace MarketSystem
                 //Delete Product
                 else if (productInput == "3")
                 {
+                    if (connect.State == ConnectionState.Closed)
+                    {
+                        connect.Open();
+                    }
+
                     Console.WriteLine("Which product you want to delete? Type the ID.");
                     pd.ID = Convert.ToInt32(Console.ReadLine());
 
@@ -292,6 +259,11 @@ namespace MarketSystem
                 //Show Product
                 else if (productInput == "4")
                 {
+                    if (connect.State == ConnectionState.Closed)
+                    {
+                        connect.Open();
+                    }
+
                     Console.Clear();
                     string showProduct = "Select ID , name , stock , price from ProductTable";
                     SqlCommand cmdsProduct = new SqlCommand(showProduct, connect);
@@ -316,6 +288,169 @@ namespace MarketSystem
                     Console.WriteLine("\nPress any key to go main menu.");
                     Console.ReadKey();
                     MainMenu();
+                }
+            }
+
+            void EmployeeManagement()
+            {
+                Console.Clear();
+
+                string employeeInput;
+
+                Console.WriteLine("Welcome to the employee management panel.What do you want to do?");
+                Console.WriteLine("1 - Add Employee\n2 - Update Employee\n3 - Delete Employee\n4 - Show Employees");
+                employeeInput = Console.ReadLine();
+
+                //Add Employee 
+                if (employeeInput == "1")
+                {
+                    Console.Clear();
+
+                    if (connect.State == ConnectionState.Closed)
+                    {
+                        connect.Open();
+                    }
+
+                    Console.WriteLine("First, what is your new employee's name?");
+                    ed.name = Console.ReadLine();
+                    Console.WriteLine("Specify a username for your new employee.");
+                    ed.username = Console.ReadLine();
+                    Console.WriteLine("Set a password for new employee.");
+                    ed.password = Console.ReadLine();
+                    Console.WriteLine("What is your employee's role? (Store Manager,Cashier,Janitor,Security Guard,");
+                    ed.role = Console.ReadLine();
+
+                    string signup = "Insert into EmployeeTable (username,name,password,role) values (@un,@n,@pw,@r)";
+                    SqlCommand cmdsignup = new SqlCommand(signup, connect);
+
+                    cmdsignup.Parameters.AddWithValue("@un", ed.username);
+                    cmdsignup.Parameters.AddWithValue("n", ed.name);
+                    cmdsignup.Parameters.AddWithValue("pw", ed.password);
+                    cmdsignup.Parameters.AddWithValue("r", ed.role);
+                    cmdsignup.ExecuteNonQuery();
+
+                    connect.Close();
+                    Console.WriteLine("Successful.");
+                    Console.ReadKey();
+                    MainMenu();
+                }
+
+                //Update Employee
+                else if (employeeInput == "2")
+                {
+                    Console.Clear();
+
+                    int updateInput;
+
+                    Console.WriteLine("Which employee's information do you want to change? Type the ID.");
+                    ed.ID = Convert.ToInt32(Console.ReadLine());
+                    Console.WriteLine("What changes do you want to make about your employee?\n1 - Password 2 - Role");
+                    updateInput = Convert.ToInt16(Console.ReadLine());
+
+                    if (updateInput == 1)
+                    {
+                        if (connect.State == ConnectionState.Closed)
+                        {
+                            connect.Open();
+                        }
+
+                        Console.Clear();
+
+                        Console.WriteLine("Type the new password.");
+                        ed.password = Console.ReadLine();
+
+                        string updatepEmployee = "Update EmployeeTable set password = @pw where ID = @id";
+                        SqlCommand cmduEmployee = new SqlCommand(updatepEmployee, connect);
+
+                        cmduEmployee.Parameters.AddWithValue("pw", ed.password);
+                        cmduEmployee.Parameters.AddWithValue("id", ed.ID);
+
+                        cmduEmployee.ExecuteNonQuery();
+
+                        connect.Close();
+                        Console.WriteLine("Successful.");
+                        Console.ReadKey();
+                        MainMenu();
+                    }
+
+                    else if (updateInput == 2)
+                    {
+                        if (connect.State == ConnectionState.Closed)
+                        {
+                            connect.Open();
+                        }
+
+                        Console.WriteLine("Type the new role.");
+                        ed.role = Console.ReadLine();
+
+                        Console.Clear();
+                        string updaterEmployee = "Update EmployeeTable set role = @role where ID = @id";
+                        SqlCommand cmduEmployee = new SqlCommand(updaterEmployee, connect);
+
+                        cmduEmployee.Parameters.AddWithValue("@role",ed.role);
+                        cmduEmployee.Parameters.AddWithValue ("id", ed.ID);
+
+                        cmduEmployee.ExecuteNonQuery();
+
+                        connect.Close();
+                        Console.WriteLine("Successful.");
+                        Console.ReadKey();
+                        MainMenu();
+
+                    }
+                }
+
+                //Delete Employee
+                else if (employeeInput == "3")
+                {
+                    if (connect.State == ConnectionState.Closed)
+                    {
+                        connect.Open();
+                    }
+
+                    Console.Clear();
+                    Console.WriteLine("Which employee do want to delete ? Type the id.");
+                    ed.ID = Convert.ToInt32(Console.ReadLine());
+
+                    string deleteEmployee = "Delete from EmployeeTable where ID = @id";
+                    SqlCommand cmddEmployee = new SqlCommand(deleteEmployee, connect);
+
+                    cmddEmployee.Parameters.AddWithValue("id", ed.ID);
+
+                    cmddEmployee.ExecuteNonQuery();
+
+                    Console.WriteLine("Successful.");
+                    Console.ReadKey();
+                    MainMenu();
+                }
+
+                //Show Employee
+                else if (employeeInput == "4")
+                {
+                    if (connect.State == ConnectionState.Closed)
+                    {
+                        connect.Open();
+                    }
+
+                    Console.Clear();
+
+                    string showEmployee = "Select * from EmployeeTable";
+                    SqlCommand cmduEmployee = new SqlCommand(showEmployee, connect);
+
+                    dr = cmduEmployee.ExecuteReader();
+
+                    Console.WriteLine("{0,-10} | {1,-20} | {2,-20} | {3,-20}" , "ID", "Username", "Name", "Role");
+                    Console.WriteLine(new String('-', 75));
+
+                    while (dr.Read())
+                    {
+                        Console.WriteLine("{0,-10} | {1,-20} | {2,-20} | {3,-20}", dr["ID"], dr["username"], dr["name"], dr["role"]);
+                    }
+
+                    Console.WriteLine("\nSuccessful.");
+                    Console.ReadKey();
+                    MainMenu();
+
                 }
             }
         }

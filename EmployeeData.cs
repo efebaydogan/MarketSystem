@@ -8,6 +8,7 @@ namespace MarketSystem
 {
     internal class EmployeeData
     {
+        public int ID;
         public string username;
         public string name;
         public string password;
