@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Xml.Schema;
 
 namespace MarketSystem
 {
@@ -14,6 +15,7 @@ namespace MarketSystem
 
             EmployeeData ed = new EmployeeData();
             ProductData pd = new ProductData();
+            ExpenseData exd = new ExpenseData();
             SqlDataReader dr;
 
             Console.WriteLine("Hello! \nWelcome to the market system.");
@@ -42,7 +44,7 @@ namespace MarketSystem
                     {
                         Console.Clear();
                         Console.WriteLine("As a store manager,what do you want to do? ");
-                        Console.WriteLine("1 - Product Management\n2 - Employee Management");
+                        Console.WriteLine("1 - Product Management\n2 - Employee Management\n3 - Income and Expense");
                         int smInput = Convert.ToInt16(Console.ReadLine());
 
                         switch (smInput)
@@ -52,6 +54,9 @@ namespace MarketSystem
                                 break;
                             case 2:
                                 EmployeeManagement();
+                                break;
+                            case 3:
+                                IncomeExpense();
                                 break;
                             default:
                                 Console.WriteLine("İnvalid Value");
@@ -387,8 +392,8 @@ namespace MarketSystem
                         string updaterEmployee = "Update EmployeeTable set role = @role where ID = @id";
                         SqlCommand cmduEmployee = new SqlCommand(updaterEmployee, connect);
 
-                        cmduEmployee.Parameters.AddWithValue("@role",ed.role);
-                        cmduEmployee.Parameters.AddWithValue ("id", ed.ID);
+                        cmduEmployee.Parameters.AddWithValue("@role", ed.role);
+                        cmduEmployee.Parameters.AddWithValue("id", ed.ID);
 
                         cmduEmployee.ExecuteNonQuery();
 
@@ -439,7 +444,7 @@ namespace MarketSystem
 
                     dr = cmduEmployee.ExecuteReader();
 
-                    Console.WriteLine("{0,-10} | {1,-20} | {2,-20} | {3,-20}" , "ID", "Username", "Name", "Role");
+                    Console.WriteLine("{0,-10} | {1,-20} | {2,-20} | {3,-20}", "ID", "Username", "Name", "Role");
                     Console.WriteLine(new String('-', 75));
 
                     while (dr.Read())
@@ -451,6 +456,193 @@ namespace MarketSystem
                     Console.ReadKey();
                     MainMenu();
 
+                }
+            }
+
+            void IncomeExpense()
+            {
+                Console.Clear();
+
+                int ieInput;
+                Console.WriteLine("Which financial function do you want to see?\n1 - Income   2 - Expense");
+                ieInput = Convert.ToInt16(Console.ReadLine());
+
+                if (ieInput == 1)
+                {
+                    Console.Clear();
+
+                    if (connect.State == ConnectionState.Closed)
+                    {
+                        connect.Open();
+                    }
+
+                    string showIncome = "Select ID , name , stock , price from ProductTable";
+                    string sumIncome = "Select sum(price) from ProductTable";
+                    SqlCommand cmdsIncome = new SqlCommand(showIncome, connect);
+                    SqlCommand cmdsumIncome = new SqlCommand(sumIncome, connect);
+
+                    int total = Convert.ToInt32(cmdsumIncome.ExecuteScalar());
+                    dr = cmdsIncome.ExecuteReader();
+
+                    Console.WriteLine("{0, -10} | {1, -25} | {2, -10} | {3, -10}", "ID", "Name", "Stock", "Price");
+                    Console.WriteLine(new string('-', 60));
+
+                    while (dr.Read())
+                    {
+                        Console.WriteLine("{0, -10} | {1, -25} | {2, -10} | {3, -10}",
+                        dr["ID"], dr["name"], dr["stock"], dr["price"]);
+                    }
+
+                    Console.WriteLine("\n" + "Summary : " + total);
+
+                    Console.WriteLine("\nPress any key to go main menu.");
+                    Console.ReadKey();
+                    MainMenu();
+                }
+
+                else if (ieInput == 2)
+                {
+                    Console.Clear();
+                    if (connect.State == ConnectionState.Closed)
+                    {
+                        connect.Open();
+                    }
+
+                    int expenseInput;
+                    Console.WriteLine("What do you want to do abount your expenses?");
+                    Console.WriteLine("1 - Add Expense\n2 - Update expense\n3 - Delete Expense\n4 - Show expense");
+                    expenseInput = Convert.ToInt16(Console.ReadLine());
+
+                    //Add Expense
+                    if (expenseInput == 1)
+                    {
+                        Console.Clear();
+
+                        Console.WriteLine("Type your expense's name.");
+                        exd.name = Console.ReadLine();
+                        Console.WriteLine("Type your expense's type.(bill,salary,taxes,repairs)");
+                        exd.type = Console.ReadLine();
+                        Console.WriteLine("Type your expense's amount.");
+                        exd.amount = Convert.ToInt32(Console.ReadLine());
+                        Console.WriteLine("Type your expense's date.(YYYY-MM-DD)");
+                        exd.date = Console.ReadLine();
+
+                        string addExpense = "Insert into ExpenseTable (name,type,amount,date) values (@name,@type,@amount,@date)";
+                        SqlCommand cmdaExpense = new SqlCommand(addExpense, connect);
+
+                        cmdaExpense.Parameters.AddWithValue("@name", exd.name);
+                        cmdaExpense.Parameters.AddWithValue("@type", exd.type);
+                        cmdaExpense.Parameters.AddWithValue("@amount", exd.amount);
+                        cmdaExpense.Parameters.AddWithValue("@date", exd.date);
+
+                        cmdaExpense.ExecuteNonQuery();
+
+                        Console.WriteLine("Successful!");
+                        Console.ReadKey();
+                        MainMenu();
+                    }
+
+                    //Update Expense
+                    else if (expenseInput == 2)
+                    {
+
+                        Console.Clear();
+                        string updateInput;
+                        Console.WriteLine("Which expense do you want to change? Type the ID.");
+                        exd.ID = Convert.ToInt16(Console.ReadLine());
+                        Console.WriteLine("What do you want to change about this expense?\n1 - Amount 2 - Date");
+                        updateInput = Console.ReadLine();
+
+                        if (updateInput == "1")
+                        {
+                            Console.Clear();
+                            Console.WriteLine("Write the new amount.");
+                            exd.amount = Convert.ToInt32(Console.ReadLine());
+                            string updateaExpense = "Update ExpenseTable set amount = @amount where ID = @id";
+                            SqlCommand cmduExpense1 = new SqlCommand(updateaExpense, connect);
+
+                            cmduExpense1.Parameters.AddWithValue("@amount", exd.amount);
+                            cmduExpense1.Parameters.AddWithValue("@id", exd.ID);
+
+                            cmduExpense1.ExecuteNonQuery();
+
+                            Console.WriteLine("Successful.");
+                            Console.WriteLine("\nPress any key to go main menu.");
+                            Console.ReadKey();
+                            MainMenu();
+
+                        }
+
+                        else if (updateInput == "2")
+                        {
+                            Console.Clear();
+                            Console.WriteLine("Write the new date.");
+                            exd.date = Console.ReadLine();
+
+                            string updatedExpense = "Update ExpenseTable set date = @date where ID = @id";
+                            SqlCommand cmduExpense2 = new SqlCommand(updatedExpense, connect);
+
+                            cmduExpense2.Parameters.AddWithValue("@date", exd.date);
+                            cmduExpense2.Parameters.AddWithValue("@id", exd.ID);
+
+                            cmduExpense2.ExecuteNonQuery();
+
+                            Console.WriteLine("Successful.");
+                            Console.WriteLine("\nPress any key to go main menu.");
+                            Console.ReadKey();
+                            MainMenu();
+
+                        }
+                    }
+
+                    //Delete Expense
+                    else if (expenseInput == 3)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Which expense do you want to delete? Type the ID.");
+                        exd.ID = Convert.ToInt32(Console.ReadLine());
+
+                        string deleteExpense = "Delete from ExpenseTable where ID = @id";
+                        SqlCommand cmddExpense = new SqlCommand(deleteExpense, connect);
+
+                        cmddExpense.Parameters.AddWithValue("@id", exd.ID);
+
+                        cmddExpense.ExecuteNonQuery();
+
+                        Console.WriteLine("Successful.");
+                        Console.WriteLine("\nPress any key to go main menu.");
+                        Console.ReadKey();
+                        MainMenu();
+
+                    }
+
+                    //Show Expense
+                    else if (expenseInput == 4)
+                    {
+                        Console.Clear();
+                        string showExpense = "Select ID,name,type,amount,date from ExpenseTable";
+                        string sumExpense = "Select sum(amount) from ExpenseTable";
+                        SqlCommand cmdsExpense = new SqlCommand(showExpense, connect);
+                        SqlCommand cmdsumExpense = new SqlCommand(sumExpense, connect);
+
+                        dr = cmdsExpense.ExecuteReader();
+                        int total = Convert.ToInt32(cmdsumExpense.ExecuteScalar());
+
+                        Console.WriteLine("{0,-10} | {1,-15} | {2,-15} | {3,-15} | ", "ID", "Name", "Type", "Amount");
+                        Console.WriteLine(new string('-', 65));
+
+                        while (dr.Read())
+                        {
+                            Console.WriteLine("{0,-10} | {1,-15} | {2,-15} | {3,-15} | ", dr["ID"], dr["name"], dr["type"], dr["amount"]);
+                        }
+
+                        Console.WriteLine("\nSummary : " + total);
+
+                        Console.WriteLine("\nSuccessful.");
+                        Console.ReadKey();
+                        MainMenu();
+
+                    }
                 }
             }
         }
