@@ -6,14 +6,10 @@ using System.Threading.Tasks;
 
 namespace MarketSystem
 {
-    internal class ProductData
+    internal class SalesData
     {
         public int ID;
         public string name;
-        public string category;
-        public int stock;
         public int price;
-
-        public int total;
     }
 }

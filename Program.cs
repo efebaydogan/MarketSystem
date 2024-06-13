@@ -1,7 +1,6 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Xml.Schema;
 
 namespace MarketSystem
 {
@@ -16,6 +15,7 @@ namespace MarketSystem
             EmployeeData ed = new EmployeeData();
             ProductData pd = new ProductData();
             ExpenseData exd = new ExpenseData();
+            SalesData sd = new SalesData();
             SqlDataReader dr;
 
             Console.WriteLine("Hello! \nWelcome to the market system.");
@@ -43,7 +43,7 @@ namespace MarketSystem
                     if (ed.role == "Store Manager")
                     {
                         Console.Clear();
-                        Console.WriteLine("As a store manager,what do you want to do? ");
+                        Console.WriteLine("As a Store Manager,what do you want to do?");
                         Console.WriteLine("1 - Product Management\n2 - Employee Management\n3 - Income and Expense");
                         int smInput = Convert.ToInt16(Console.ReadLine());
 
@@ -62,6 +62,26 @@ namespace MarketSystem
                                 Console.WriteLine("İnvalid Value");
                                 break;
 
+                        }
+                    }
+
+                    if (ed.role == "Cashier")
+                    {
+                        Console.Clear();
+                        Console.WriteLine("As a Cashier,what do you want to do?");
+                        Console.WriteLine("1 - Start the day\n2 - Show the ID of the products.");
+
+                        int cInput = Convert.ToInt16(Console.ReadLine());
+
+                        switch (cInput)
+                        {
+                            case 1:
+                                Sales();
+                                break;
+
+                            default:
+                                Console.WriteLine("İnvalid Value");
+                                break;
                         }
                     }
                 }
@@ -644,6 +664,86 @@ namespace MarketSystem
 
                     }
                 }
+            }
+
+            //Cashier Functions
+
+            void Sales()
+            {
+                Console.Clear();
+
+                if (connect.State == ConnectionState.Closed)
+                {
+                    connect.Open();
+                }
+                //We will create a Table named SalesTable.We create this for calculate the total easily.
+                //In this function,first,we will take data from ProductTable.Then we will insert datas to new table.Then We will update new stocks(-1).Then we will calculate the total.Then we will delete the datas in the SalesTable.And we repeat this process.
+
+                while (true)
+                {
+                    Console.WriteLine("Enter the product's ID.");
+                    pd.ID = Convert.ToInt32(Console.ReadLine());
+
+                    if (pd.ID == 101)
+                    {
+                        break;
+                    }
+
+                    string selectProduct = "Select name,price,stock from ProductTable where ID = @id";
+                    string insertsTable = "Insert into SalesTable (ID,name,price) values (@id,@name,@price)";
+                    string updateStock = "Update ProductTable set stock = @stock where ID = @id";
+                    string sumPrice = "Select sum(price) from SalesTable";
+                    string deleteSales = "Delete from SalesTable";
+
+                    SqlCommand cmdsProduct = new SqlCommand(selectProduct, connect);
+                    SqlCommand cmdiTable = new SqlCommand(insertsTable, connect);
+                    SqlCommand cmduStock = new SqlCommand(updateStock, connect);
+                    SqlCommand cmdsPrice = new SqlCommand(sumPrice, connect);
+                    SqlCommand cmddSales = new SqlCommand(deleteSales, connect);
+
+                    cmdsProduct.Parameters.AddWithValue("@id", pd.ID);
+                    dr = cmdsProduct.ExecuteReader();
+
+                    if (dr.Read())
+                    {
+                        pd.name = Convert.ToString(dr["name"]);
+                        pd.price = Convert.ToInt32(dr["price"]);
+                        pd.stock = Convert.ToInt32(dr["stock"]);
+                    }
+
+                    pd.stock--;
+                    dr.Close();
+
+                    if (pd.ID != 00)
+                    {
+                        cmdiTable.Parameters.AddWithValue("@id", pd.ID);
+                        cmdiTable.Parameters.AddWithValue("@name", pd.name);
+                        cmdiTable.Parameters.AddWithValue("@price", pd.price);
+
+                        cmduStock.Parameters.AddWithValue("@stock", pd.stock);
+                        cmduStock.Parameters.AddWithValue("@id", pd.ID);
+
+                        cmdiTable.ExecuteNonQuery();
+                        cmduStock.ExecuteNonQuery();
+
+                        pd.total = Convert.ToInt32(cmdsPrice.ExecuteScalar());
+                    }
+
+                    else if (pd.ID == 0)
+                    {
+                        Console.WriteLine("Total : " + pd.total);
+
+                        cmddSales.ExecuteNonQuery();
+
+                        Console.WriteLine("Finished! Press enter to go to new customer ");
+                        Console.ReadKey();
+                        Console.Clear();
+                        continue;
+                    }
+                }
+
+                MainMenu();
+
             }
         }
     }
