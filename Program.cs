@@ -79,6 +79,9 @@ namespace MarketSystem
                                 Sales();
                                 break;
 
+                            case 2:
+                                showProducts();
+                                break;
                             default:
                                 Console.WriteLine("İnvalid Value");
                                 break;
