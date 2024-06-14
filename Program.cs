@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Runtime.Remoting.Proxies;
 
 namespace MarketSystem
 {
@@ -16,6 +17,7 @@ namespace MarketSystem
             ProductData pd = new ProductData();
             ExpenseData exd = new ExpenseData();
             SalesData sd = new SalesData();
+            RepairData rd = new RepairData();
             SqlDataReader dr;
 
             Console.WriteLine("Hello! \nWelcome to the market system.");
@@ -84,6 +86,28 @@ namespace MarketSystem
                                 break;
                             default:
                                 Console.WriteLine("İnvalid Value");
+                                break;
+                        }
+                    }
+
+                    if(ed.role == "Janitor")
+                    {
+                        Console.Clear();
+                        Console.WriteLine("As a Janitor,what do you want to do?");
+                        Console.WriteLine("1 - Repair\n 2 - Cleaning Material");
+
+                        int jInput = Convert.ToInt16(Console.ReadLine());
+
+                        switch (jInput)
+                        {
+                            case 1:
+                                Repair();
+                                break;
+                            case 2:
+                                CleaningMaterial();
+                                break;
+                            default:
+                                Console.WriteLine("Invalid Value");
                                 break;
                         }
                     }
@@ -777,6 +801,99 @@ namespace MarketSystem
                 Console.ReadKey();
                 MainMenu();
             }
+
+            //Janitor Functions
+
+            void Repair()
+            {
+                Console.Clear();
+
+                if (connect.State == ConnectionState.Closed)
+                {
+                    connect.Open();
+                }
+
+                Console.WriteLine("Welcome to the repair panel.You can add place,repair amount,repair status and date to database here.");
+                Console.WriteLine("First,choose what do you want to do here?");
+                Console.WriteLine("1 - Add new repair\n2 - Edit the status of repair\n3 - Delete the repair");
+
+                int repairInput = Convert.ToInt16(Console.ReadLine());
+
+                if(repairInput == 1)
+                {
+                    Console.Clear();
+
+                    Console.WriteLine("Where needs to be repaired?");
+                    rd.place = Console.ReadLine();
+                    Console.WriteLine("How much is the amount of repair?");
+                    rd.amount = Convert.ToInt32(Console.ReadLine());
+                    Console.WriteLine("What is the status of repair(Not started,In Progress,Finished)");
+                    rd.status = Console.ReadLine();
+                    Console.WriteLine("When the problem is begin?(YYYY-MM-DD)");
+                    rd.date = Console.ReadLine();
+
+                    string addRepair = "Insert into RepairTable (place,amount,status,date) values (@place,@amount,@status,@date)";
+                    SqlCommand cmdaRepair = new SqlCommand (addRepair, connect);
+
+                    cmdaRepair.Parameters.AddWithValue("@place", rd.place);
+                    cmdaRepair.Parameters.AddWithValue("@amount", rd.amount);
+                    cmdaRepair.Parameters.AddWithValue("@status", rd.status);
+                    cmdaRepair.Parameters.AddWithValue("@date", rd.date);
+
+                    cmdaRepair.ExecuteNonQuery();
+
+                    connect.Close();
+                    Console.WriteLine("\nSuccessful.");
+                    Console.ReadKey();
+                    MainMenu();
+
+                }
+
+                if(repairInput == 2)
+                {
+                    Console.Clear();
+
+                    Console.WriteLine("What is the ID of the repair you want to change status?");
+                    rd.id = Convert.ToInt32(Console.ReadLine());
+                    Console.WriteLine("What do you want to do the status(Not started,In Progress,Finished)");
+                    rd.status = Console.ReadLine();
+
+                    string updateRepair = "Update RepairTable set status = @status where ID = @id";
+                    SqlCommand cmduRepair = new SqlCommand(updateRepair, connect);
+
+                    cmduRepair.Parameters.AddWithValue("@status", rd.status);
+                    cmduRepair.Parameters.AddWithValue("@id", rd.id);
+
+                    cmduRepair.ExecuteNonQuery();
+
+                    connect.Close();
+                    Console.WriteLine("\nSuccessful.");
+                    Console.ReadKey();
+                    MainMenu();
+
+                }
+
+                if (repairInput == 3)
+                {
+                    Console.Clear();
+
+                    Console.WriteLine("What is the id of the repair you want to delete");
+                    rd.id = Convert.ToInt32(Console.ReadLine());
+
+                    string deleteRepair = "Delete RepairTable where ID = @id";
+                    SqlCommand cmddRepair = new SqlCommand(deleteRepair, connect);
+
+                    cmddRepair.Parameters.AddWithValue("@id", rd.id);
+
+                    cmddRepair.ExecuteNonQuery();
+
+                    connect.Close();
+                    Console.WriteLine("\nSuccessful.");
+                    Console.ReadKey();
+                    MainMenu();
+                }
+            }
+
         }
     }
 }
