@@ -748,6 +748,35 @@ namespace MarketSystem
                 MainMenu();
 
             }
+
+            void showProducts()
+            {
+
+                if (connect.State == ConnectionState.Closed)
+                {
+                    connect.Open();
+                }
+
+                Console.Clear();
+
+                string showProduct = "Select ID,name,stock,price from ProductTable";
+                SqlCommand cmdsProduct = new SqlCommand(showProduct, connect);
+
+                dr = cmdsProduct.ExecuteReader();
+
+                Console.WriteLine("{0,-10} | {1,-20} | {2,-10} | {3,-10} |", "ID", "name", "stock", "price");
+                Console.WriteLine(new string('-', 61));
+
+                while (dr.Read())
+                {
+                    Console.WriteLine("{0,-10} | {1,-20} | {2,-10} | {3,-10} |", dr["ID"], dr["name"], dr["stock"], dr["price"]);
+                }
+
+                connect.Close();
+                Console.WriteLine("\nSuccessful.");
+                Console.ReadKey();
+                MainMenu();
+            }
         }
     }
 }
