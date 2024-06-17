@@ -16,8 +16,8 @@ namespace MarketSystem
             EmployeeData ed = new EmployeeData();
             ProductData pd = new ProductData();
             ExpenseData exd = new ExpenseData();
-            SalesData sd = new SalesData();
             RepairData rd = new RepairData();
+            CleaningMData cd = new CleaningMData();
             SqlDataReader dr;
 
             Console.WriteLine("Hello! \nWelcome to the market system.");
@@ -94,7 +94,7 @@ namespace MarketSystem
                     {
                         Console.Clear();
                         Console.WriteLine("As a Janitor,what do you want to do?");
-                        Console.WriteLine("1 - Repair\n 2 - Cleaning Material");
+                        Console.WriteLine("1 - Repair\n2 - Cleaning Material");
 
                         int jInput = Convert.ToInt16(Console.ReadLine());
 
@@ -894,6 +894,112 @@ namespace MarketSystem
                 }
             }
 
+            void CleaningMaterial()
+            {
+                Console.Clear ();
+
+                if (connect.State == ConnectionState.Closed)
+                {
+                    connect.Open();
+                }
+
+                int cmInput;
+                Console.WriteLine("Welcome to cleaning material panel.What do you want to do?");
+                Console.WriteLine("1 - Add new material\n2 - Update Stock\n3 - Delete material\n4 - Show Materials");
+                cmInput = Convert.ToInt16(Console.ReadLine());
+
+                if (cmInput == 1)
+                {
+                    Console.Clear();
+
+                    Console.WriteLine("Write the name of material.");
+                    cd.name = Console.ReadLine();
+                    Console.WriteLine("Write the stock of material");
+                    cd.stock = Convert.ToInt32(Console.ReadLine());
+                    Console.WriteLine("Write the amount of material.");
+                    cd.amount = Convert.ToInt32(Console.ReadLine());
+
+                    string addCMaterial = "Insert into CMaterialTable (name,stock,amount) values (@name,@stock,@amount)";
+                    SqlCommand cmdaMaterial = new SqlCommand(addCMaterial, connect);
+
+                    cmdaMaterial.Parameters.AddWithValue("@name", cd.name);
+                    cmdaMaterial.Parameters.AddWithValue("@stock", cd.stock);
+                    cmdaMaterial.Parameters.AddWithValue("@amount", cd.amount);
+
+                    cmdaMaterial.ExecuteNonQuery();
+
+                    connect.Close();
+                    Console.WriteLine("\nSuccessful.");
+                    Console.ReadKey();
+                    MainMenu();
+
+                }
+
+                else if (cmInput == 2)
+                {
+                    Console.Clear();
+
+                    Console.WriteLine("Write the ID of you want to update.");
+                    cd.ID = Convert.ToInt32(Console.ReadLine());
+                    Console.WriteLine("How much do you want to update stock?");
+                    cd.stock = Convert.ToInt32(Console.ReadLine());
+
+                    string updateCMaterial = "Update CMaterialTable set stock = @stock where ID = @id";
+                    SqlCommand cmduMaterial = new SqlCommand(updateCMaterial, connect);
+
+                    cmduMaterial.Parameters.AddWithValue("@stock", cd.stock);
+                    cmduMaterial.Parameters.AddWithValue("@id", cd.ID);
+
+                    cmduMaterial.ExecuteNonQuery();
+
+                    connect.Close();
+                    Console.WriteLine("\nSuccessful.");
+                    Console.ReadKey();
+                    MainMenu();
+
+                }
+
+                else if (cmInput == 3)
+                {
+                    Console.Clear();
+
+                    Console.WriteLine("Which material do you want to delete? Type the ID.");
+                    cd.ID = Convert.ToInt32(Console.ReadLine());
+
+                    string deleteCMaterial = "Delete from CMaterialTable where ID = @id";
+                    SqlCommand cmddMaterial = new SqlCommand(deleteCMaterial, connect);
+
+                    cmddMaterial.Parameters.AddWithValue("@id",cd.ID);
+
+                    cmddMaterial.ExecuteNonQuery();
+
+                    connect.Close();
+                    Console.WriteLine("\nSuccessful.");
+                    Console.ReadKey();
+                    MainMenu();
+                }
+
+                else if (cmInput == 4)
+                {
+                    string showMaterial = "Select ID,name,stock,amount from CMaterialTable";
+                    SqlCommand cmdsMaterial = new SqlCommand(showMaterial, connect);
+
+                    dr = cmdsMaterial.ExecuteReader();
+
+                    Console.WriteLine("{0,-10} | {1,-15} | {2,-10} | {3,-10} |", "ID","Name","Stock","Amount");
+                    Console.WriteLine(new String('-',56));
+
+                    while (dr.Read())
+                    {
+                        Console.WriteLine("{0,-10} | {1,-15} | {2,-10} | {3,-10} |", dr["ID"], dr["name"], dr["stock"], dr["amount"]);
+                    }
+
+                    connect.Close();
+                    Console.WriteLine("\nSuccessful.");
+                    Console.ReadKey();
+                    MainMenu();
+                }
+            }
         }
     }
 }
